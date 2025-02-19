@@ -1,14 +1,24 @@
 import { KokoroTTS } from "kokoro-js";
 
-process.env.KOKORO_CACHE_DIR = "model";
-
 const tts = await KokoroTTS.from_pretrained(
   "onnx-community/Kokoro-82M-ONNX",
-  { dtype: "q8" }, // fp32, fp16, q8, q4, q4f16
+  { dtype: "q8",device:'wasm' }
 );
 
-const text = "Life is like a box of chocolates. You never know what you're gonna get.";
-const audio = await tts.generate(text,
-  { voice: "af_sky" }, // See `tts.list_voices()`
-);
-audio.save("audio.wav");
+
+const text = "is there a way to use kokoro.js locally without depending on internet and bundle it with vite so node js codes can run in browser for kokoro";
+const audio = await tts.generate(text, { voice: "af_sky" });
+
+// Convert to Blob, then create a temporary download link
+const blob = await audio.toBlob();
+const url = URL.createObjectURL(blob);
+
+const a = document.createElement("a");
+a.href = url;
+a.download = "prime_noun.wav";   // The file name for the downloaded file
+document.body.appendChild(a);
+a.click();
+
+// Clean up
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
